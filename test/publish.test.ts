@@ -287,6 +287,41 @@ describe('--sites', () => {
     );
   });
 
+  it('leaves events/ and the relay list alone, which belong to sites/', async () => {
+    const paths = tempRegistry();
+    const key = generateSecretKey();
+    writePublisherPubkey(paths, getPublicKey(key));
+    writeSite(paths, { ...example(), id: 'real' });
+    const signer = testIo({ [ENV_NSEC]: bytesToHex(key) });
+    expect(await publishEventsCommand(paths, [], signer.io)).toBe(0);
+    expect(await relayListCommand(paths, ['--relay', 'wss://relay.one/'], signer.io)).toBe(0);
+    const t = testIo();
+    expect(await validateCommand(paths, ['--sites', FIXTURE_SITES, '--no-history'], t.io)).toBe(0);
+    expect(t.err).toContain(
+      'events/ and publisher/relay-list.json not checked: --sites is not sites/'
+    );
+    expect(await publishEventsCommand(paths, ['--dry-run', '--sites', FIXTURE_SITES], t.io)).toBe(
+      0
+    );
+    expect(await snapshotCommand(paths, ['--dry-run', '--sites', FIXTURE_SITES], t.io)).toBe(0);
+    // The real sites/ still answers for events/: an orphaned event fails, with or without
+    // --sites naming sites/ itself.
+    rmSync(join(paths.sites, 'real.json'));
+    for (const argv of [['--no-history'], ['--sites', 'sites', '--no-history']]) {
+      const real = testIo();
+      expect(await validateCommand(paths, argv, real.io)).toBe(1);
+      expect(real.all()).toMatch(/events\/real\.json: no sites\/real\.json/);
+    }
+  });
+
+  it('validates the fixtures against the repository as committed', async () => {
+    const { layout } = await import('../src/layout.ts');
+    const t = testIo();
+    expect(await validateCommand(layout(), ['--sites', FIXTURE_SITES, '--no-history'], t.io)).toBe(
+      0
+    );
+  });
+
   it('passes an empty sites/', async () => {
     const paths = tempRegistry();
     const t = testIo();
