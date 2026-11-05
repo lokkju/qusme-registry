@@ -1,0 +1,14 @@
+{
+  "repo": "lokkju/qusme",
+  "path": "packages/nostr/src",
+  "commit": "03d56240bacae037791dc749ffdc816d47e6375d",
+  "files": {
+    "kinds.ts": "599e8881366ef128d97730bf544aee5878a5c90c",
+    "nip44.ts": "b636d9b736bb0b11c37c5a9a9c66a03d85edbf1f",
+    "nip49.ts": "81b96807047d61df3e00f222bd4545d2535c349c",
+    "result.ts": "0a08d0b2932fc7e35df1a83e37004f7fe42178ca",
+    "signer.ts": "26e7f1ac7181780c7d01059ebfb494349f9f4fe3",
+    "siteDef.ts": "5ef92d9579795bf9b564074098154fd48c0057c6",
+    "validate.ts": "b608f32e5581fe7d1b9ba237d2defd0cb1f386de"
+  }
+}
