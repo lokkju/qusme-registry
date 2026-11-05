@@ -83,6 +83,21 @@ interface Checked {
   notes: string[];
 }
 
+/** `publisher/relay-list.json`, if committed, verifies against the publisher key. */
+function checkRelayList(paths: Layout, pubkey: string | undefined): Problem[] {
+  if (!existsSync(paths.relayList)) return [];
+  const file = rel(paths, paths.relayList);
+  if (pubkey === undefined) {
+    return [{ file, message: 'publisher/pubkey.json has no pubkey to verify this against' }];
+  }
+  try {
+    readRelayList(JSON.parse(readFileSync(paths.relayList, 'utf8')), pubkey);
+    return [];
+  } catch (error) {
+    return [{ file, message: (error as Error).message }];
+  }
+}
+
 /** Every check `pnpm validate` makes. */
 export function check(
   paths: Layout,
@@ -97,21 +112,13 @@ export function check(
   } catch (error) {
     problems.push({ file: rel(paths, paths.publisherKey), message: (error as Error).message });
   }
-  problems.push(...checkPublishedEvents(paths, definitions, pubkey));
-  if (existsSync(paths.relayList)) {
-    const file = rel(paths, paths.relayList);
-    if (pubkey === undefined) {
-      problems.push({
-        file,
-        message: 'publisher/pubkey.json has no pubkey to verify this against',
-      });
-    } else {
-      try {
-        readRelayList(JSON.parse(readFileSync(paths.relayList, 'utf8')), pubkey);
-      } catch (error) {
-        problems.push({ file, message: (error as Error).message });
-      }
-    }
+  // events/ and publisher/relay-list.json are the published state of sites/; a run against
+  // another directory (the fixtures) has nothing to check them against.
+  if (resolve(paths.sites) !== resolve(paths.root, 'sites')) {
+    notes.push('events/ and publisher/relay-list.json not checked: --sites is not sites/');
+  } else {
+    problems.push(...checkPublishedEvents(paths, definitions, pubkey));
+    problems.push(...checkRelayList(paths, pubkey));
   }
   if (options.history !== false) {
     const base = resolveBase(paths.root, options.base, io.env);
