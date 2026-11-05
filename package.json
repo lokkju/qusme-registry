@@ -1,0 +1,33 @@
+{
+  "name": "qusme-registry",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "validate": "node scripts/validate.ts",
+    "publish-events": "node scripts/publish-events.ts",
+    "snapshot": "node scripts/snapshot.ts",
+    "relay-list": "node scripts/relay-list.ts",
+    "keygen": "node scripts/keygen.ts",
+    "vendor:sync": "node scripts/vendor-sync.ts",
+    "typecheck": "tsc -p .",
+    "lint": "biome ci .",
+    "format": "biome check --write .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@noble/hashes": "2.0.1",
+    "@scure/base": "2.0.0",
+    "ajv": "8.20.0",
+    "nostr-tools": "2.25.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.3",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}

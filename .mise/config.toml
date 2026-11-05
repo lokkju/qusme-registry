@@ -1,0 +1,6 @@
+[tools]
+node = "24.22.1"
+pnpm = "12.15.0" # keep in step with packageManager in package.json and with lokkju/qusme
+
+[env]
+_.path = ["{{config_root}}/node_modules/.bin"]
