@@ -6,7 +6,7 @@ The site registry for [qus.me](https://github.com/lokkju/qusme): one JSON defini
 
 | Path | What it holds |
 |---|---|
-| `sites/<id>.json` | One definition per file; the file name is the site id. Empty until the first real sites ([lokkju/qusme#22](https://github.com/lokkju/qusme/issues/22)) |
+| `sites/<id>.json` | One definition per file; the file name is the site id. The sites so far are under [Sites](#sites) |
 | `schema/site-definition.schema.json` | JSON Schema for a definition, for editors and as the first validation pass |
 | `events/<id>.json` | The signed event for each site's published version, committed by the operator after signing |
 | `publisher/pubkey.json` | The registry publisher's public key (hex), `null` until the operator creates the key |
@@ -27,6 +27,16 @@ pnpm validate --sites test/fixtures/sites
 pnpm publish-events --dry-run --sites test/fixtures/sites
 pnpm snapshot --dry-run --sites test/fixtures/sites
 ```
+
+## Sites
+
+The launch sites come from [lokkju/qusme#22](https://github.com/lokkju/qusme/issues/22). A definition counts as verified once the extension has inserted a draft with it on the live, logged-in site, and the PR records the date, the `lang` values checked and the strategy that worked. The schema has no field for this, so it lives here.
+
+| Site | File | Version | Verified on a logged-in page |
+|---|---|---|---|
+| X | `sites/x.json` | 2026.11.1 | No. Built from X's shipped web bundles and message catalogs (`abs.twimg.com/x-web/x-web/assets/messages-logged-in-*.json`) and public userscripts, without an account; the operator checks it live |
+
+X currently ships two web clients, and the definition targets both. The older one has a Draft.js composer whose textbox is named "Post text" (English only in the definition, since its catalogs aren't public). The newer `x-web` client has a `<textarea>` named by its placeholder, "What's happening?", in the 42 languages its catalogs translate. Both name the sidebar account button "Account menu" and show `@handle` inside it, which is what `extract` reads; on narrow screens `x-web` shows only the avatar, so detection fails there and the extension lists every X account. The 280 limit is the free tier's; X Premium's longer posts are out of scope.
 
 ## Definition format
 
