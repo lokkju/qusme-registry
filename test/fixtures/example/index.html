@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>qus.me registry example page</title>
+  </head>
+  <body>
+    <!-- The page test/fixtures/sites/example.json describes. Serve the repository root on
+         localhost, e.g. `python3 -m http.server 8000`, and open
+         http://localhost:8000/test/fixtures/example/ -->
+    <p role="status" aria-label="Signed in">Signed in as @example_user</p>
+    <form>
+      <textarea aria-label="Post text" rows="6" cols="60"></textarea>
+      <button type="submit">Post</button>
+    </form>
+    <script>
+      const text = new URLSearchParams(location.search).get('text');
+      if (text !== null) document.querySelector('textarea').value = text;
+    </script>
+  </body>
+</html>
