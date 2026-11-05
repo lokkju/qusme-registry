@@ -110,7 +110,9 @@ export function checkDefinitionText(
 export function loadDefinitions(paths: Layout): { definitions: Definition[]; problems: Problem[] } {
   const definitions: Definition[] = [];
   const problems: Problem[] = [];
-  const names = readdirSync(paths.sites).sort();
+  const names = readdirSync(paths.sites)
+    .filter((n) => !n.startsWith('.'))
+    .sort();
   for (const name of names) {
     const file = relative(paths.root, join(paths.sites, name));
     if (!name.endsWith('.json')) {

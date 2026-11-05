@@ -6,13 +6,13 @@ The site registry for [qus.me](https://github.com/lokkju/qusme): one JSON defini
 
 | Path | What it holds |
 |---|---|
-| `sites/<id>.json` | One definition per file; the file name is the site id |
+| `sites/<id>.json` | One definition per file; the file name is the site id. Empty until the first real sites ([lokkju/qusme#22](https://github.com/lokkju/qusme/issues/22)) |
 | `schema/site-definition.schema.json` | JSON Schema for a definition, for editors and as the first validation pass |
 | `events/<id>.json` | The signed event for each site's published version, committed by the operator after signing |
 | `publisher/pubkey.json` | The registry publisher's public key (hex), `null` until the operator creates the key |
 | `publisher/relay-list.json` | The publisher's signed NIP-65 relay list (kind 10002), once published |
 | `vendor/qusme-nostr/` | lokkju/qusme's site definition parser, copied byte for byte (see below) |
-| `example/index.html` | A local test page that `sites/example.json` describes |
+| `test/fixtures/sites/` | Definitions for tests and CI's dry runs, never published; `example.json` describes the local test page in `test/fixtures/example/` |
 | `src/`, `scripts/`, `test/` | The tooling |
 
 ```sh
@@ -21,11 +21,16 @@ pnpm validate                  # every definition, against the base branch's ver
 pnpm publish-events --dry-run  # sign everything with a throwaway key
 pnpm snapshot --dry-run        # build a snapshot with a throwaway key
 pnpm test
+
+# the same against the fixtures, as CI does
+pnpm validate --sites test/fixtures/sites
+pnpm publish-events --dry-run --sites test/fixtures/sites
+pnpm snapshot --dry-run --sites test/fixtures/sites
 ```
 
 ## Definition format
 
-`sites/example.json`, which describes `example/index.html` served on localhost:
+The fixture `test/fixtures/sites/example.json`, which describes `test/fixtures/example/index.html` served on localhost:
 
 ```json
 {
@@ -37,7 +42,7 @@ pnpm test
     "locator": { "role": "status", "name": { "en": ["Signed in"] } },
     "extract": "Signed in as @([A-Za-z0-9_]{1,15})"
   },
-  "intents": { "compose": "{origin}/example/?text={text}" },
+  "intents": { "compose": "{origin}/test/fixtures/example/?text={text}" },
   "fields": [
     {
       "name": "text",
@@ -83,6 +88,8 @@ Clients ignore keys they don't know and skip a field that names an unknown strat
 - fits in a 64 KiB event, the size storage relays accept;
 - has a newer version than its copy at the base commit if it changed. The base is the merge base with the PR's target branch, or with `origin/main`; on `main` itself, the previous commit. `--base <ref>` overrides it.
 
+`--sites <dir>` reads definitions from another directory instead of `sites/`; `publish-events` and `snapshot` accept it only with `--dry-run`, so fixtures never reach the publisher key.
+
 It also checks `events/` and `publisher/`: each committed event verifies against the publisher key with `parseSiteDefinitionEvent`, has a definition, and is no newer than it, and a definition whose version matches its event has the same content.
 
 ## Publishing
@@ -106,7 +113,7 @@ pnpm snapshot                          # dist/snapshot.json from events/ and the
 
 `publish-events` validates first and signs nothing if anything fails. For each definition without an event at its current version it writes `events/<id>.json`, with a `created_at` later than the event it replaces, so relays keep the newer one. It writes the events it signed (or, with `--all`, every current event) to `dist/events.jsonl`, one per line, and publishes those to the relays given, reporting each relay's answer and exiting non-zero if any relay refused or couldn't be reached. Commit `events/` afterwards: it's how the next run and the snapshot know what is published.
 
-`pnpm relay-list --relay <url>[#read|#write] ... [--publish] [--also <url>]` signs the publisher's NIP-65 relay list into `publisher/relay-list.json` and, with `--publish`, sends it to those relays and any `--also` relays (an indexer such as `wss://purplepag.es` helps other clients find it). A relay without a marker is both read and write; devices fetch definitions from the write relays.
+`pnpm relay-list --relay <url>[#read|#write] ... [--publish] [--also <url>]` signs the publisher's NIP-65 relay list into `publisher/relay-list.json` and, with `--publish`, sends it to those relays and any `--also` relays (an indexer, so other clients can find the list). A relay without a marker is both read and write; devices fetch definitions from the write relays.
 
 ## Snapshot format
 
@@ -116,9 +123,9 @@ pnpm snapshot                          # dist/snapshot.json from events/ and the
 {
   "format": "qusme-registry-snapshot/1",
   "publisher": "<publisher pubkey, 64 hex>",
-  "relayList": { "kind": 10002, "tags": [["r", "wss://nos.lol"]], "...": "a signed event" },
+  "relayList": { "kind": 10002, "tags": [["r", "wss://nos.lol"], ["r", "wss://relay.ditto.pub"]], "...": "a signed event" },
   "siteDefinitions": [
-    { "kind": 31236, "tags": [["d", "example"], ["alt", "qus.me site definition: Example (local test page) 2026.11.1"]], "content": "<definition JSON>", "...": "a signed event" }
+    { "kind": 31236, "tags": [["d", "x"], ["alt", "qus.me site definition: X 2026.11.1"]], "content": "<definition JSON>", "...": "a signed event" }
   ]
 }
 ```
@@ -143,7 +150,7 @@ The operator does this once, on a trusted machine with this repository checked o
 1. `pnpm keygen --out ~/qusme-registry.ncryptsec` asks for a passphrase twice (12 characters or more), generates the key, writes it encrypted with that passphrase (NIP-49, `log_n` 20) to the file with mode 600, writes the pubkey to `publisher/pubkey.json`, and prints the pubkey and npub. The bare key is never printed or written.
 2. Put the passphrase in the password manager.
 3. Store the ncryptsec in lokkju/infra: `sops edit /home/lokkju/projects/infra/secrets/qusme-registry-publisher.sops.yaml` with one line, `QUSME_REGISTRY_NCRYPTSEC: ncryptsec1...`. A copy in the password manager next to the passphrase is a reasonable second backup, since the ncryptsec is useless without the passphrase. Then `shred -u ~/qusme-registry.ncryptsec`.
-4. Publish the relay list. Which relays is an open question in spec 17; the spec recommends `wss://nos.lol` and `wss://relay.ditto.pub` for storage:
+4. Publish the relay list. The publisher's relays are `wss://nos.lol` and `wss://relay.ditto.pub`, both read and write, and the list also goes to the indexer `wss://purplepag.es` (decided 2026-11-05; this settles spec 17's open question on the registry's relays):
 
    ```sh
    sops exec-env /home/lokkju/projects/infra/secrets/qusme-registry-publisher.sops.yaml \

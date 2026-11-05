@@ -47,8 +47,17 @@ jobs:
       - name: Validate definitions
         run: pnpm validate
 
+      # The fixtures exercise every step whatever sites/ holds; only dry runs
+      # read them, so they are never signed with the real key.
+      - name: Validate the fixtures
+        run: pnpm validate --sites test/fixtures/sites
+
       - name: Sign with a throwaway key
-        run: pnpm publish-events --dry-run
+        run: |
+          pnpm publish-events --dry-run
+          pnpm publish-events --dry-run --sites test/fixtures/sites
 
       - name: Snapshot with a throwaway key
-        run: pnpm snapshot --dry-run
+        run: |
+          pnpm snapshot --dry-run
+          pnpm snapshot --dry-run --sites test/fixtures/sites

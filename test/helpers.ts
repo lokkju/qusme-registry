@@ -5,8 +5,11 @@ import { join } from 'node:path';
 import type { Io } from '../src/commands.ts';
 import { type Layout, layout, REPO_ROOT } from '../src/layout.ts';
 
+/** Definitions used by tests and CI's dry runs; never published. */
+export const FIXTURE_SITES = join(REPO_ROOT, 'test', 'fixtures', 'sites');
+
 export const EXAMPLE = JSON.parse(
-  readFileSync(join(REPO_ROOT, 'sites', 'example.json'), 'utf8')
+  readFileSync(join(FIXTURE_SITES, 'example.json'), 'utf8')
 ) as Record<string, unknown>;
 
 /** A deep copy of the example definition, for mutating in a test. */

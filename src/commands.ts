@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join, relative } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import type { NostrEvent } from 'nostr-tools/core';
 import { npubEncode } from 'nostr-tools/nip19';
@@ -51,6 +51,16 @@ export const defaultIo = (): Io => ({
 class UsageError extends Error {}
 
 const rel = (paths: Layout, path: string): string => relative(paths.root, path) || '.';
+
+/**
+ * `--sites <dir>`: read definitions from another directory, such as the test fixtures. Signing
+ * from one is allowed only in a dry run, so fixtures never reach the production key.
+ */
+function withSites(paths: Layout, sites: string | undefined, dryRun: boolean): Layout {
+  if (sites === undefined) return paths;
+  if (!dryRun) throw new UsageError('--sites works only with --dry-run here');
+  return { ...paths, sites: resolve(paths.root, sites) };
+}
 
 function report(io: Io, problems: Problem[]): void {
   for (const p of problems) io.err(`${p.file}: ${p.message}`);
@@ -117,10 +127,14 @@ export function check(
 export async function validateCommand(paths: Layout, argv: string[], io: Io): Promise<number> {
   const { values } = parseArgs({
     args: argv,
-    options: { base: { type: 'string' }, 'no-history': { type: 'boolean' } },
+    options: {
+      base: { type: 'string' },
+      'no-history': { type: 'boolean' },
+      sites: { type: 'string' },
+    },
   });
   const result = check(
-    paths,
+    withSites(paths, values.sites, true),
     { ...(values.base === undefined ? {} : { base: values.base }), history: !values['no-history'] },
     io
   );
@@ -202,8 +216,10 @@ export async function publishEventsCommand(paths: Layout, argv: string[], io: Io
       'to-relay-list': { type: 'boolean' },
       all: { type: 'boolean' },
       base: { type: 'string' },
+      sites: { type: 'string' },
     },
   });
+  paths = withSites(paths, values.sites, values['dry-run'] === true);
   const checked = check(paths, values.base === undefined ? {} : { base: values.base }, io);
   for (const note of checked.notes) io.err(note);
   if (checked.problems.length > 0) {
@@ -255,8 +271,9 @@ export async function publishEventsCommand(paths: Layout, argv: string[], io: Io
 export async function snapshotCommand(paths: Layout, argv: string[], io: Io): Promise<number> {
   const { values } = parseArgs({
     args: argv,
-    options: { 'dry-run': { type: 'boolean' }, out: { type: 'string' } },
+    options: { 'dry-run': { type: 'boolean' }, out: { type: 'string' }, sites: { type: 'string' } },
   });
+  paths = withSites(paths, values.sites, values['dry-run'] === true);
   const checked = check(paths, { history: false }, io);
   if (checked.problems.length > 0) {
     report(io, checked.problems);

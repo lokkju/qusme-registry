@@ -18,7 +18,7 @@ import { writePublisherPubkey } from '../src/publisher.ts';
 import { type Snapshot, verifySnapshot } from '../src/snapshot.ts';
 import { decodeNcryptsec, encodeNcryptsec } from '../vendor/qusme-nostr/nip49.ts';
 import { parseSiteDefinitionEvent } from '../vendor/qusme-nostr/siteDef.ts';
-import { example, tempRegistry, testIo, writeSite } from './helpers.ts';
+import { example, FIXTURE_SITES, tempRegistry, testIo, writeSite } from './helpers.ts';
 
 const readJson = <T = NostrEvent>(path: string): T => JSON.parse(readFileSync(path, 'utf8')) as T;
 const readJsonl = (path: string): NostrEvent[] =>
@@ -262,5 +262,35 @@ describe('validate', () => {
     writeFileSync(paths.publisherKey, '{ "pubkey": null }\n');
     expect(await validateCommand(paths, ['--no-history'], t.io)).toBe(1);
     expect(t.all()).toMatch(/no pubkey to verify this against/);
+  });
+});
+
+describe('--sites', () => {
+  it('validates and dry-runs the fixtures, and refuses to sign them for real', async () => {
+    const { layout } = await import('../src/layout.ts');
+    const paths = { ...layout(tempRegistry().root) };
+    const t = testIo();
+    expect(await validateCommand(paths, ['--sites', FIXTURE_SITES, '--no-history'], t.io)).toBe(0);
+    expect(t.out).toContain('1 definition(s) valid');
+    expect(await publishEventsCommand(paths, ['--dry-run', '--sites', FIXTURE_SITES], t.io)).toBe(
+      0
+    );
+    expect(await snapshotCommand(paths, ['--dry-run', '--sites', FIXTURE_SITES], t.io)).toBe(0);
+    const key = generateSecretKey();
+    writePublisherPubkey(paths, getPublicKey(key));
+    const signer = testIo({ [ENV_NSEC]: bytesToHex(key) });
+    await expect(
+      publishEventsCommand(paths, ['--sites', FIXTURE_SITES], signer.io)
+    ).rejects.toThrow(/only with --dry-run/);
+    await expect(snapshotCommand(paths, ['--sites', FIXTURE_SITES], signer.io)).rejects.toThrow(
+      /only with --dry-run/
+    );
+  });
+
+  it('passes an empty sites/', async () => {
+    const paths = tempRegistry();
+    const t = testIo();
+    expect(await validateCommand(paths, ['--no-history'], t.io)).toBe(0);
+    expect(t.out).toContain('0 definition(s) valid');
   });
 });

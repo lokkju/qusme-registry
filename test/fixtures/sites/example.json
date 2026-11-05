@@ -7,7 +7,7 @@
     "locator": { "role": "status", "name": { "en": ["Signed in"] } },
     "extract": "Signed in as @([A-Za-z0-9_]{1,15})"
   },
-  "intents": { "compose": "{origin}/example/?text={text}" },
+  "intents": { "compose": "{origin}/test/fixtures/example/?text={text}" },
   "fields": [
     {
       "name": "text",
