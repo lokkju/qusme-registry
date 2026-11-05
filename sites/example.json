@@ -1,0 +1,20 @@
+{
+  "id": "example",
+  "version": "2026.11.1",
+  "name": "Example (local test page)",
+  "match": ["http://localhost/*", "http://127.0.0.1/*"],
+  "account": {
+    "locator": { "role": "status", "name": { "en": ["Signed in"] } },
+    "extract": "Signed in as @([A-Za-z0-9_]{1,15})"
+  },
+  "intents": { "compose": "{origin}/example/?text={text}" },
+  "fields": [
+    {
+      "name": "text",
+      "label": "Post text",
+      "locators": [{ "role": "textbox", "name": { "en": ["Post text"], "de": ["Beitragstext"] } }],
+      "inject": ["paste", "insertText", "native", "clipboard"],
+      "constraints": { "maxLength": 280, "counter": "default" }
+    }
+  ]
+}
