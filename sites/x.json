@@ -1,6 +1,6 @@
 {
   "id": "x",
-  "version": "2026.11.1",
+  "version": "2026.11.2",
   "name": "X",
   "match": ["https://x.com/*", "https://twitter.com/*"],
   "account": {
@@ -117,7 +117,7 @@
           }
         }
       ],
-      "inject": ["paste", "insertText", "clipboard"],
+      "inject": ["insertText", "paste", "clipboard"],
       "constraints": {
         "maxLength": 280,
         "counter": "twitter-text"
