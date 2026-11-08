@@ -2,7 +2,8 @@ name: ci
 
 # Typecheck, lint and test the tooling, validate every definition against its
 # version on the base branch, and sign and snapshot them with a throwaway key.
-# Runs on the homelab GARM runners (lokkju/infra) while the repo is private.
+# Runs on GitHub-hosted runners: the repo is public, and self-hosted runners
+# never serve public repos.
 # CI never holds the publisher key and never publishes.
 
 on:
@@ -19,7 +20,7 @@ concurrency:
 
 jobs:
   check:
-    runs-on: homelab
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
