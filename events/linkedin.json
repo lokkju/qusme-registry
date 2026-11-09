@@ -1,0 +1,18 @@
+{
+  "kind": 31236,
+  "created_at": 1794261082,
+  "tags": [
+    [
+      "d",
+      "linkedin"
+    ],
+    [
+      "alt",
+      "qus.me site definition: LinkedIn 2026.11.1"
+    ]
+  ],
+  "content": "{\"id\":\"linkedin\",\"version\":\"2026.11.1\",\"name\":\"LinkedIn\",\"match\":[\"https://www.linkedin.com/*\"],\"fields\":[{\"name\":\"text\",\"label\":\"Post text\",\"locators\":[{\"role\":\"textbox\",\"name\":{\"en\":[\"Text editor for creating content\"]}}],\"inject\":[\"insertText\",\"paste\",\"clipboard\"],\"constraints\":{\"maxLength\":3000,\"counter\":\"default\"}}]}",
+  "pubkey": "144986dabaeeb884d105f2da2cac0008b3eb408bab0447a39894f87b7d94f54c",
+  "id": "cc7cfed6d832b6df25d1e04c2271717c5c964760509e237ab0fe2fea751b2008",
+  "sig": "ac7d99efd10494f9479a2288bee1ad7fe204f8ec40759dc726f61a1fdbe6d293e713698165839c07b90aa40a2d56778a4d0d47c73a6334900c5e73edd596490d"
+}
