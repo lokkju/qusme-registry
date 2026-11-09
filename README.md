@@ -125,7 +125,7 @@ Every command that signs refuses a key that isn't the one in `publisher/pubkey.j
 ```sh
 pnpm publish-events                    # sign every definition whose version has no event yet
 pnpm publish-events --to-relay-list    # ...and publish them to the relay list's write relays
-pnpm publish-events --relay wss://nos.lol --relay wss://relay.ditto.pub
+pnpm publish-events --relay wss://relay.primal.net --relay wss://relay.ditto.pub
 pnpm publish-events --all --to-relay-list   # republish every current event, signing what's new
 pnpm snapshot                          # dist/snapshot.json from events/ and the relay list
 ```
@@ -142,7 +142,7 @@ pnpm snapshot                          # dist/snapshot.json from events/ and the
 {
   "format": "qusme-registry-snapshot/1",
   "publisher": "<publisher pubkey, 64 hex>",
-  "relayList": { "kind": 10002, "tags": [["r", "wss://nos.lol"], ["r", "wss://relay.ditto.pub"]], "...": "a signed event" },
+  "relayList": { "kind": 10002, "tags": [["r", "wss://relay.primal.net"], ["r", "wss://relay.ditto.pub"]], "...": "a signed event" },
   "siteDefinitions": [
     { "kind": 31236, "tags": [["d", "x"], ["alt", "qus.me site definition: X 2026.11.1"]], "content": "<definition JSON>", "...": "a signed event" }
   ]
@@ -169,11 +169,11 @@ The operator does this once, on a trusted machine with this repository checked o
 1. `pnpm keygen --out ~/qusme-registry.ncryptsec` asks for a passphrase twice (12 characters or more), generates the key, writes it encrypted with that passphrase (NIP-49, `log_n` 20) to the file with mode 600, writes the pubkey to `publisher/pubkey.json`, and prints the pubkey and npub. The bare key is never printed or written.
 2. Put the passphrase in the password manager.
 3. Store the ncryptsec in lokkju/infra: `sops edit /home/lokkju/projects/infra/secrets/qusme-registry-publisher.sops.yaml` with one line, `QUSME_REGISTRY_NCRYPTSEC: ncryptsec1...`. A copy in the password manager next to the passphrase is a reasonable second backup, since the ncryptsec is useless without the passphrase. Then `shred -u ~/qusme-registry.ncryptsec`.
-4. Publish the relay list. The publisher's relays are `wss://nos.lol` and `wss://relay.ditto.pub`, both read and write, and the list also goes to the indexer `wss://purplepag.es` (decided 2026-11-05; this settles spec 17's open question on the registry's relays):
+4. Publish the relay list. The publisher's relays are `wss://relay.primal.net` and `wss://relay.ditto.pub`, both read and write, and the list also goes to the indexer `wss://purplepag.es` (decided 2026-11-05; on 2026-11-09 relay.primal.net replaced nos.lol, which silently dropped the publisher's writes, see #11):
 
    ```sh
    sops exec-env /home/lokkju/projects/infra/secrets/qusme-registry-publisher.sops.yaml \
-     'pnpm -C /home/lokkju/projects/qusme-registry relay-list --relay wss://nos.lol --relay wss://relay.ditto.pub --publish --also wss://purplepag.es'
+     'pnpm -C /home/lokkju/projects/qusme-registry relay-list --relay wss://relay.primal.net --relay wss://relay.ditto.pub --publish --also wss://purplepag.es'
    ```
 
    It prompts for the passphrase on the terminal.
