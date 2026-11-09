@@ -1,0 +1,25 @@
+{
+  "id": "linkedin",
+  "version": "2026.11.1",
+  "name": "LinkedIn",
+  "match": ["https://www.linkedin.com/*"],
+  "fields": [
+    {
+      "name": "text",
+      "label": "Post text",
+      "locators": [
+        {
+          "role": "textbox",
+          "name": {
+            "en": ["Text editor for creating content"]
+          }
+        }
+      ],
+      "inject": ["insertText", "paste", "clipboard"],
+      "constraints": {
+        "maxLength": 3000,
+        "counter": "default"
+      }
+    }
+  ]
+}
