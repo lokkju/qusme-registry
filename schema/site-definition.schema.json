@@ -39,9 +39,31 @@
           "$ref": "#/$defs/locator"
         },
         "extract": {
-          "description": "A regular expression whose first capture group is the account.",
-          "type": "string",
-          "minLength": 1
+          "description": "A regular expression whose first capture group is the account, or { pattern, template } to build the account from the match.",
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["pattern", "template"],
+              "properties": {
+                "pattern": {
+                  "description": "The regular expression.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "template": {
+                  "description": "The account built from the match: {1} to {9} are capture groups, {host} is the page's host name. Older clients reject a definition with a template and keep the version they hold.",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              }
+            }
+          ]
         }
       }
     },
@@ -71,6 +93,10 @@
       "additionalProperties": false,
       "required": ["role", "name"],
       "properties": {
+        "by": {
+          "description": "What the names are compared with: the accessible name (default) or the placeholder text of the element or of a [data-placeholder] inside it.",
+          "enum": ["name", "placeholder"]
+        },
         "role": {
           "type": "string",
           "minLength": 1
@@ -132,7 +158,7 @@
               "maximum": 9007199254740991
             },
             "counter": {
-              "enum": ["default", "graphemes", "twitter-text"]
+              "enum": ["default", "graphemes", "twitter-text", "mastodon"]
             }
           }
         }
