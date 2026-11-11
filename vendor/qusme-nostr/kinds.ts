@@ -21,8 +21,14 @@ export const KIND_SHORT_NOTE = 1;
 export const KIND_SEAL = 13;
 /** NIP-59 gift wrap. */
 export const KIND_GIFT_WRAP = 1059;
+/** NIP-65 relay list metadata: the registry publisher's relays (spec 10.3). */
+export const KIND_RELAY_LIST = 10002;
 /** NIP-37 private storage relay list. */
 export const KIND_PRIVATE_RELAYS = 10013;
+/** NIP-AB device pairing message (ephemeral range, spec 8.3). */
+export const KIND_PAIRING = 24134;
+/** NIP-42 relay authentication. */
+export const KIND_RELAY_AUTH = 22242;
 /** NIP-98 HTTP auth. */
 export const KIND_HTTP_AUTH = 27235;
 /** NIP-78 application-specific data (addressable). */
