@@ -64,9 +64,9 @@ export function definitionContent(def: Pick<Definition, 'json'>): string {
 
 /**
  * Checks one definition file's text as the registry requires: the JSON Schema (which refuses
- * unknown keys, strategies and counters), lokkju/qusme's parser with no field left unusable, the
- * file name equal to `id`, an account pattern with a capture group, and an event that fits a
- * relay's size limit.
+ * unknown keys, strategies, counters and locator kinds), lokkju/qusme's parser with no field
+ * left unusable and no locator skipped, the file name equal to `id`, an account pattern with a
+ * capture group, and an event that fits a relay's size limit.
  */
 export function checkDefinitionText(
   file: string,
@@ -91,11 +91,23 @@ export function checkDefinitionText(
   if (definition.id !== expected) {
     problems.push(`id ${definition.id} differs from the file name ${expected}.json`);
   }
+  const record = json as Record<string, unknown>;
   if (definition.account !== undefined) {
     const groups = (new RegExp(`${definition.account.extract}|`).exec('')?.length ?? 1) - 1;
     if (groups < 1) problems.push('account.extract has no capture group');
+  } else if (record.account !== undefined) {
+    problems.push('parser: account would be ignored (its locator is of an unknown kind)');
   }
-  const record = json as Record<string, unknown>;
+  const rawFields = Array.isArray(record.fields)
+    ? (record.fields as Record<string, unknown>[])
+    : [];
+  for (const field of definition.fields) {
+    const raw = rawFields.find((f) => f?.name === field.name);
+    const listed = Array.isArray(raw?.locators) ? raw.locators.length : 0;
+    if (field.locators.length !== listed) {
+      problems.push(`parser: field ${field.name} would skip a locator of an unknown kind`);
+    }
+  }
   // id, pubkey, sig and the tags written by events.ts, at their full lengths.
   const overhead = 64 + 64 + 128 + 200 + 2 * definition.id.length + 2 * definition.name.length;
   const bytes = Buffer.byteLength(JSON.stringify(JSON.stringify(record))) + overhead;

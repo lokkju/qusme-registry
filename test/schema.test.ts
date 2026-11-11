@@ -5,6 +5,7 @@ import { checkDefinitionText, SCHEMA_PATH } from '../src/definitions.ts';
 import {
   COUNTER_NAMES,
   INJECTION_STRATEGIES,
+  LOCATOR_SOURCES,
   parseSiteDefinition,
 } from '../vendor/qusme-nostr/siteDef.ts';
 import { example } from './helpers.ts';
@@ -52,6 +53,16 @@ const AGREE: [string, boolean, Mutation][] = [
   ['bad intent name', false, (d) => (d.intents = { '1x': 'https://x/' })],
   ['account without extract', false, (d) => delete d.account.extract],
   ['field name over 128', false, (d) => (d.fields[0].name = 'x'.repeat(129))],
+  ['placeholder locator', true, (d) => (d.fields[0].locators[0].by = 'placeholder')],
+  ['name locator, explicit', true, (d) => (d.fields[0].locators[0].by = 'name')],
+  ['by not a string', false, (d) => (d.fields[0].locators[0].by = 1)],
+  [
+    'account template',
+    true,
+    (d) => (d.account.extract = { pattern: d.account.extract, template: '{1}@{host}' }),
+  ],
+  ['extract object without a pattern', false, (d) => (d.account.extract = { template: '{1}' })],
+  ['mastodon counter', true, (d) => (d.fields[0].constraints.counter = 'mastodon')],
 ];
 
 /** Cases only the schema refuses: clients skip these, the registry must not publish them. */
@@ -61,6 +72,12 @@ const SCHEMA_ONLY: [string, Mutation][] = [
   ['unknown constraint', (d) => (d.fields[0].constraints.minLength = 1)],
   ['unknown injection strategy', (d) => (d.fields[0].inject = ['typeKeys'])],
   ['unknown counter', (d) => (d.fields[0].constraints.counter = 'bytes')],
+  ['unknown locator kind', (d) => (d.fields[0].locators[0].by = 'xpath')],
+  ['unknown account locator kind', (d) => (d.account.locator.by = 'xpath')],
+  [
+    'extract object without a template',
+    (d) => (d.account.extract = { pattern: d.account.extract }),
+  ],
 ];
 
 /** Cases only the parser refuses; JSON Schema can't express them. */
@@ -68,6 +85,14 @@ const PARSER_ONLY: [string, Mutation][] = [
   ['clipboard not last', (d) => (d.fields[0].inject = ['clipboard', 'paste'])],
   ['repeated field name', (d) => d.fields.push(structuredClone(d.fields[0]))],
   ['extract not a regular expression', (d) => (d.account.extract = '(')],
+  [
+    'template with an unknown placeholder',
+    (d) => (d.account.extract = { pattern: d.account.extract, template: '{1}@{origin}' }),
+  ],
+  [
+    'template naming a missing group',
+    (d) => (d.account.extract = { pattern: d.account.extract, template: '{2}@{host}' }),
+  ],
 ];
 
 const mutated = (m: Mutation): Record<string, unknown> => {
@@ -77,7 +102,8 @@ const mutated = (m: Mutation): Record<string, unknown> => {
 };
 
 describe('schema/site-definition.schema.json', () => {
-  it('lists the same strategies and counters as the parser', () => {
+  it('lists the same strategies, counters and locator kinds as the parser', () => {
+    expect(schema.$defs.locator.properties.by.enum).toEqual([...LOCATOR_SOURCES]);
     expect(schema.$defs.field.properties.inject.items.enum).toEqual([...INJECTION_STRATEGIES]);
     expect(schema.$defs.field.properties.constraints.properties.counter.enum).toEqual([
       ...COUNTER_NAMES,
@@ -132,6 +158,17 @@ describe('checkDefinitionText', () => {
     expect(problems(example(), 'sites/other.json')).toEqual([
       'id example differs from the file name other.json',
     ]);
+  });
+
+  it('names a locator or account the parser would skip', () => {
+    expect(problems(mutated((d) => (d.fields[0].locators[0].by = 'xpath')))).toEqual(
+      expect.arrayContaining(['parser: field text would skip a locator of an unknown kind'])
+    );
+    expect(problems(mutated((d) => (d.account.locator.by = 'xpath')))).toEqual(
+      expect.arrayContaining([
+        'parser: account would be ignored (its locator is of an unknown kind)',
+      ])
+    );
   });
 
   it('requires a capture group in account.extract', () => {
