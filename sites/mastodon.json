@@ -1,8 +1,60 @@
 {
   "id": "mastodon",
-  "version": "2026.11.1",
+  "version": "2026.11.2",
   "name": "Mastodon",
   "match": [],
+  "account": {
+    "locator": {
+      "role": "navigation",
+      "name": {
+        "en": ["Main"],
+        "be": ["Галоўная"],
+        "ca": ["Menú Principal", "Main"],
+        "cs": ["Hlavní menu"],
+        "cy": ["Prif"],
+        "da": ["Primær"],
+        "de": ["Hauptmenü"],
+        "el": ["Κύρια"],
+        "eo": ["Ĉefmenuo", "Main"],
+        "es": ["Principal"],
+        "es-AR": ["Principal"],
+        "es-MX": ["Principal"],
+        "et": ["Esileht"],
+        "eu": ["Nagusia"],
+        "fa": ["اصلی"],
+        "fi": ["Pääosio"],
+        "fr": ["Accueil"],
+        "fr-CA": ["Accueil"],
+        "ga": ["Príomh"],
+        "gd": ["Prìomh-sheòladaireachd"],
+        "gl": ["Inicio"],
+        "he": ["ראשי"],
+        "hu": ["Elsődleges"],
+        "is": ["Aðalstýring"],
+        "it": ["Menù principale"],
+        "kab": ["Agejdan"],
+        "ko": ["메인"],
+        "nan-TW": ["主要"],
+        "nl": ["Hoofdmenu"],
+        "nn": ["Hovudmeny"],
+        "pa": ["ਮੁੱਖ"],
+        "pt-BR": ["Principal"],
+        "pt-PT": ["Principal"],
+        "ru": ["Главное меню"],
+        "sl": ["Glavno"],
+        "sq": ["Kryesorja"],
+        "sv": ["Allmänt"],
+        "tr": ["Ana"],
+        "vi": ["Chính"],
+        "zh-CN": ["主要"],
+        "zh-TW": ["主要"]
+      }
+    },
+    "extract": {
+      "pattern": "@([A-Za-z0-9_]+(?:[.-]+[A-Za-z0-9_]+)*)",
+      "template": "{1}@{host}"
+    }
+  },
   "intents": {
     "compose": "{origin}/share?text={text}"
   },
@@ -124,7 +176,7 @@
       "inject": ["insertText", "native", "clipboard"],
       "constraints": {
         "maxLength": 500,
-        "counter": "graphemes"
+        "counter": "mastodon"
       }
     }
   ]
