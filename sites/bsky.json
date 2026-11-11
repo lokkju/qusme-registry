@@ -1,6 +1,6 @@
 {
   "id": "bsky",
-  "version": "2026.11.1",
+  "version": "2026.11.2",
   "name": "Bluesky",
   "match": ["https://bsky.app/*"],
   "account": {
@@ -95,7 +95,8 @@
             "zh-CN": ["发生了什么新鲜事？", "撰写你的回复", "添加另一则帖文"],
             "zh-HK": ["有咩大件事？", "寫低你嘅回覆", "加多另一條帖文"],
             "zh-TW": ["發生了什麼新鮮事？", "撰寫您的回覆", "加入另一則貼文"]
-          }
+          },
+          "by": "placeholder"
         }
       ],
       "inject": ["insertText", "paste", "clipboard"],
