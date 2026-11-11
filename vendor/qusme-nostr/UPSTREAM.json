@@ -1,7 +1,7 @@
 {
   "repo": "lokkju/qusme",
   "path": "packages/nostr/src",
-  "commit": "82e9f570723862f9bb91a44a08715dec72b9ee18",
+  "commit": "57be8f6fd9fb206695245d2fe4970dee66cc1476",
   "files": {
     "kinds.ts": "0e2ea0d7e3db1f1b8d1fbf0ba80cc9c7ea018a2c",
     "nip44.ts": "b636d9b736bb0b11c37c5a9a9c66a03d85edbf1f",
